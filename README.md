@@ -8,8 +8,6 @@ Imperial College London MSci Physics project.
 **Working title:**
 *Plasma physics controlling the Moon's interaction with the solar wind near crustal magnetic field anomalies.*
 
----
-
 ## Overview
 This project investigates how the solar wind interacts with lunar crustal magnetic anomalies using data from NASA's ARTEMIS mission.
 
@@ -28,8 +26,6 @@ Authors:
 
 Supervisor:
 - Jonathan Eastwood
-
----
 
 ## Installation
 
@@ -72,8 +68,6 @@ pip install pyspedas
 - [ ] Search for magnetic pile-up events
 - [ ] Investigate reconnection candidates
 
----
-
 ## Useful Resources
 
 ### Project Notes
@@ -83,8 +77,6 @@ pip install pyspedas
 - Literature review tracker (Excel): https://imperiallondon-my.sharepoint.com/:x:/r/personal/yw5923_ic_ac_uk/Documents/Lit%20Review.xlsx?d=w0a56d0c475e349009701b284132d8181&csf=1&web=1&e=UyJeX4
 
 - Zotero library
-
----
 
 ## License
 
