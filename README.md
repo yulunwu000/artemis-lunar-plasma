@@ -2,7 +2,6 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![Status](https://img.shields.io/badge/Status-In%20Progress-orange)
-![Imperial](https://img.shields.io/badge/Imperial-MSci%20Physics-darkblue)
 
 Imperial College London MSci Physics project.
 
