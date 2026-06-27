@@ -62,7 +62,7 @@ pip install pyspedas
 - [x] GitHub setup
 - [x] Virtual environment configured
 - [x] Install PySPEDAS
-- [ ] Download first FGM dataset
+- [x] Download first FGM dataset
 - [ ] Plot IMF orientation
 - [ ] Identify lunar crossings
 - [ ] Search for magnetic pile-up events
