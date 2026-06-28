@@ -1,11 +1,13 @@
+# Python
+.venv/
 __pycache__/
+*.pyc
 
+# Jupyter
 .ipynb_checkpoints/
 
+# PySPEDAS downloads
+themis_data/
+
+# macOS
 .DS_Store
-
-*.cdf
-
-*.sav
-
-data/.venv/
