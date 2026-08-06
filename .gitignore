@@ -8,6 +8,8 @@ __pycache__/
 
 # PySPEDAS downloads
 themis_data/
+data/
+*.cdf
 
 # macOS
 .DS_Store
