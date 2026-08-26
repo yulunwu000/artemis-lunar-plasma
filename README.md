@@ -74,9 +74,7 @@ pip install pyspedas
 - OneNote: https://d.docs.live.net/847A08EEB93FD415/Documentos/SPC-Eastwood-2/
 
 ### Literature
-- Literature review tracker (Excel): https://imperiallondon-my.sharepoint.com/:x:/r/personal/yw5923_ic_ac_uk/Documents/Lit%20Review.xlsx?d=w0a56d0c475e349009701b284132d8181&csf=1&web=1&e=UyJeX4
-
-- Zotero library
+- Zotero library: https://www.zotero.org/groups/6643888/artemis-lunar-plasma
 
 ## License
 
