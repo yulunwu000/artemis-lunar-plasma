@@ -1,0 +1,25 @@
+key,label,year,row,interp,found,dx,dy,ha
+greenstadt71,Greenstadt 1971,1971,theory,fluid,us,0.5,0,left
+phan18,Phan 2018 (magnetosheath),2018,theory,recon,us,0.5,0,left
+lin98,Lin 1998,1998,orb_fields,fluid,us,0,0.3,center
+kurata05,Kurata 2005,2005,orb_fields,fluid,us,-0.5,0,right
+halekas08,Halekas 2008,2008,orb_fields,fluid,us,0.5,0,left
+halekas14,Halekas 2014,2014,orb_fields,whistler,us,0,0.3,center
+sawyer23,Sawyer 2023,2023,orb_fields,recon,us,-0.5,0,right
+ogino26,Ogino 2026,2026,orb_fields,recon,us,0,0.3,center
+lue11,Lue 2011,2011,orb_ions,kinetic,us,-0.5,0,right
+saito12,Saito 2012,2012,orb_ions,ambipolar,us,0.5,0,left
+maynadie26,Maynadié 2026,2026,orb_ions,kinetic,us,-0.5,0,right
+wieser10,Wieser 2010,2010,ena,fluid,us,-0.5,0,right
+vorburger12,Vorburger 2012,2012,ena,kinetic,us,0,0.3,center
+futaana13,Futaana 2013,2013,ena,ambipolar,us,0.5,0,left
+xie21,Xie 2021,2021,surface,kinetic,us,0.5,0,left
+harnett03,Harnett & Winglee 2003,2003,fluid_sim,fluid,us,-0.5,0,right
+xie15,Xie 2015,2015,fluid_sim,whistler,us,0.5,0,left
+omidi02,Omidi 2002,2002,kinetic_sim,whistler,us,0,0.3,center
+deca14,Deca 2014,2013.9,kinetic_sim,ambipolar,us,-0.5,0,right
+fatemi14,Fatemi 2014,2014.5,kinetic_sim,kinetic,us,0,-0.3,center
+fatemi15,Fatemi 2015,2015.2,kinetic_sim,kinetic,us,0,0.3,center
+bamford16,Bamford 2016,2016,kinetic_sim,ambipolar,us,0.5,0,left
+stanier24,Stanier 2024,2024,kinetic_sim,recon,us,0,0.3,center
+rovige24,Rovige 2024,2024,lab,recon,us,-0.5,0,right
