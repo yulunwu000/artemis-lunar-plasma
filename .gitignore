@@ -10,6 +10,7 @@ __pycache__/
 themis_data/
 data/
 *.cdf
+kaguya_data/
 
 # macOS
 .DS_Store
