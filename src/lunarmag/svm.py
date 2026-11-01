@@ -16,7 +16,6 @@ import pyshtools as sh
 R_M = 1737.4 #lunar reference radius used by the SVM / km
 LMAX = 450 # highest degree of SVM coefficients in spherical harmonic expansion
 
-# repo/src/lunarmag/svm.py  ->  repo/data/globalSVM20150511/LunarSVM_SHC_v01.dat
 DEFAULT_SHC = (Path(__file__).resolve().parents[2] / 'data' / 'globalSVM20150511' / 'LunarSVM_SHC_v01.dat')
 
 @lru_cache(maxsize=None)
