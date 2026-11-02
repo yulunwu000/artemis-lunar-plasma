@@ -15,8 +15,7 @@ def synthetic_pair(delay, offset, noise=0.2, seed=0, smooth=40):
     """A smooth random 'solar wind' seen by a monitor, and by a target `delay` s later."""
     rng = np.random.default_rng(seed)
     tt = np.arange(0, 1800, 0.5)
-    sw = np.column_stack([np.convolve(rng.normal(size=tt.size), np.ones(smooth) / smooth, 'same') * 8 + c
-                          for c in (-4, -5, 1)])
+    sw = np.column_stack([np.convolve(rng.normal(size=tt.size), np.ones(smooth) / smooth, 'same') * 8 + c for c in (-4, -5, 1)])
     t_m = T0 + np.arange(250, 1800, 4.0)
     t_t = T0 + np.arange(210, 1800, 4.0)
     B_m = on_grid(T0 + tt, sw, t_m) + rng.normal(0, noise, (t_m.size, 3))

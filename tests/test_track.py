@@ -16,7 +16,7 @@ def test_lonlatalt_known_points():
                     [0, -R_M, 0],          # (0 N, 270 E)
                     [0, 0, R_M + 100]])    # north pole, 100 km up
     lon, lat, alt = xyz_to_lonlatalt(xyz)
-    assert np.allclose(lon[:3], [0, 90, 270])
+    assert np.allclose(lon[:3], [0, 90, 270]) #at the pole, longitude is arbitrary
     assert np.allclose(lat, [0, 0, 0, 90])
     assert np.allclose(alt, [10, 0, 0, 100])
 
@@ -31,7 +31,7 @@ def test_shadow_cylinder():
     """Only behind-and-inside-the-cylinder counts as shadow."""
     pts = np.array([[-3000, 500, 400],     # behind, rho < R_M  -> shadow
                     [-3000, 1500, 1000],   # behind, rho > R_M  -> lit
-                    [3000, 100, 0]])       # sunward            -> lit
+                    [3000, 100, 0]])       # sunward -> lit
     assert list(in_shadow(pts)) == [True, False, False]
 
 

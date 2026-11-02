@@ -17,11 +17,11 @@ def test_svm_field_matches_30km_map():
     s = d[np.random.default_rng(0).choice(len(d), 2000, replace=False)]
     Be, Bn, Br = svm_field(s[:, 0], s[:, 1], 30.0)
     for model, col in ((Be, 2), (Bn, 3), (Br, 4)):
-        assert np.abs(model - s[:, col]).max() < 0.05      # file is rounded to 0.01 nT
+        assert np.abs(model - s[:, col]).max() < 0.05 #file is rounded to 0.01 nT
 
 
 def test_svm_map_matches_30km_map():
-    """The global grid route agrees with the file at every 0.5 deg point."""
+    """The global grid agrees with the file at every 0.5 deg point."""
     d = np.loadtxt(MAP30, skiprows=12)
     lats, lons, Be, Bn, Br, Bt = svm_map(30.0, lmax=719)
     step = lats[0] - lats[1]
