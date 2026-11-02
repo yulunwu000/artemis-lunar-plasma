@@ -56,18 +56,6 @@ pip install pyspedas
 ```
 ---
 
-## Current Progress
-
-- [x] Repository created
-- [x] GitHub setup
-- [x] Virtual environment configured
-- [x] Install PySPEDAS
-- [x] Download first FGM dataset
-- [ ] Plot IMF orientation
-- [ ] Identify lunar crossings
-- [ ] Search for magnetic pile-up events
-- [ ] Investigate reconnection candidates
-
 ## Useful Resources
 
 ### Project Notes
