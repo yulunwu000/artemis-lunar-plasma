@@ -48,8 +48,7 @@ def enr2sel(Be, Bn, Br, lon, lat):
 def gse2sel(times, B_gse, name='lunarmag_tmp'):
     """Rotate field vectors from GSE to SEL with pyspedas (rotation only, no translation).
 
-    Uses the ARTEMIS lunar ephemeris (SLP) support data, which pyspedas downloads
-    automatically, so this needs network access the first time for a given day.
+    Uses the ARTEMIS lunar ephemeris (SLP) support data, which pyspedas downloads automatically, so this needs network access the first time for a given day.
 
     Parameters
     ----------

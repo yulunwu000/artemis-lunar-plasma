@@ -6,7 +6,7 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / 'src'))
-from lunarmag import svm_field, svm_map
+from lunarmag import svm_field, svm_map # noqa: E402
 
 MAP30 = REPO / 'data' / 'globalSVM20150511' / 'LunarSVM_030_05_v01.dat'
 

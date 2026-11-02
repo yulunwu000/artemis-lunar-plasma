@@ -21,8 +21,7 @@ def solar_zenith(xyz_sse):
 
 
 def in_shadow(xyz_sse):
-    """True where the spacecraft is in the Moon's shadow: behind the Moon (x < 0)
-    and within one lunar radius of the Sun-Moon line (cylinder approximation)."""
+    """True where the spacecraft is in the Moon's shadow: behind the Moon (x < 0) and within one lunar radius of the Sun-Moon line (cylinder approximation)."""
     xyz_sse = np.atleast_2d(xyz_sse)
     return (xyz_sse[:, 0] < 0) & (np.hypot(xyz_sse[:, 1], xyz_sse[:, 2]) < R_M)
 
@@ -30,8 +29,8 @@ def in_shadow(xyz_sse):
 def shadow_intervals(t, shadow):
     """List of (start, end) times of each continuous stretch where shadow is True."""
     s = np.concatenate([[False], np.asarray(shadow, bool), [False]])
-    starts = np.flatnonzero(~s[:-1] & s[1:])         # False -> True
-    ends = np.flatnonzero(s[:-1] & ~s[1:]) - 1        # last True before True -> False
+    starts = np.flatnonzero(~s[:-1] & s[1:]) # False -> True
+    ends = np.flatnonzero(s[:-1] & ~s[1:]) - 1 # last True before True -> False
     return [(t[a], t[b]) for a, b in zip(starts, ends)]
 
 

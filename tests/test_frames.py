@@ -7,7 +7,7 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / 'src'))
-from lunarmag import sel2enr, enr2sel
+from lunarmag import sel2enr, enr2sel # noqa: E402
 
 BCAL = REPO / 'data' / 'globalSVM20150511' / 'B_Positions_supplied.rst'
 

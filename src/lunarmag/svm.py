@@ -1,11 +1,9 @@
 """SVM crustal magnetic field model of Tsunakawa et al. (2015).
 
-Evaluates the vacuum crustal field from their degree-450 spherical-harmonic
-coefficients (LunarSVM_SHC_v01.dat) with pyshtools / SHTOOLS
+Evaluates the vacuum crustal field from their degree-450 spherical-harmonic coefficients (LunarSVM_SHC_v01.dat) with pyshtools / SHTOOLS
 (Wieczorek & Meschede, 2018).
 
-Reference: Tsunakawa, H., et al. (2015), J. Geophys. Res. Planets, 120,
-1160-1185, doi:10.1002/2014JE004785.
+Reference: Tsunakawa, H., et al. (2015), J. Geophys. Res. Planets, 120, 1160-1185, doi:10.1002/2014JE004785.
 """
 from functools import lru_cache
 from pathlib import Path
@@ -18,7 +16,8 @@ LMAX = 450 # highest degree of SVM coefficients in spherical harmonic expansion
 
 DEFAULT_SHC = (Path(__file__).resolve().parents[2] / 'data' / 'globalSVM20150511' / 'LunarSVM_SHC_v01.dat')
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=None) #cache data
+
 def load_svm(path=DEFAULT_SHC):
     """
     Read the SVM coefficients and return a pyshtools SHMagCoeffs object.
