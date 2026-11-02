@@ -47,3 +47,25 @@ def test_background_reproduces_target():
     sel = (t_t > T0 + 300) & (t_t < T0 + 600)
     dB = B_t[sel] - background_at(t_t[sel], t_m, B_m, fit)
     assert np.nanmax(np.abs(dB)) < 0.2
+
+
+#choose quiet window via maximum correlation:
+def test_quiet_window_avoids_disturbance():
+    """With a 'lunar' disturbance added to the target, the chosen window avoids it."""
+    from lunarmag import choose_quiet_window
+    t_t, B_t, t_m, B_m = synthetic_pair(delay=14, offset=[-0.3, -0.1, -0.6])
+    B_t = B_t.copy()
+    hit = (t_t > T0 + 600) & (t_t < T0 + 900)
+    B_t[hit] += np.random.default_rng(5).normal(0, 3, (hit.sum(), 3)) # simulate strong local disturbance
+    fit = choose_quiet_window(t_t, B_t, t_m, B_m, span=(T0 + 300, T0 + 1200))
+    start, end = fit['window']
+    assert end <= T0 + 600 or start >= T0 + 900 # no overlap with the disturbance
+    assert abs(fit['shift'] - 14) <= 1 and fit['ok']
+
+
+def test_quiet_window_respects_exclusions():
+    from lunarmag import choose_quiet_window
+    t_t, B_t, t_m, B_m = synthetic_pair(delay=14, offset=[0, 0, 0])
+    excl = [(T0 + 250, T0 + 800)]
+    fit = choose_quiet_window(t_t, B_t, t_m, B_m, span=(T0 + 300, T0 + 1200), exclude=excl)
+    assert fit['window'][0] >= T0 + 800

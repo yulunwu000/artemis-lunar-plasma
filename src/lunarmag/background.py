@@ -70,3 +70,36 @@ def fit_background(t_target, B_target, t_monitor, B_monitor, window, max_lag=120
 def background_at(t, t_monitor, B_monitor, fit):
     """Solar-wind field expected at the target at times t: shifted monitor + offset."""
     return on_grid(t_monitor, B_monitor, np.asarray(t, dtype=float) - fit['shift']) + fit['offset']
+
+
+#choose quiet window via maximum correlation:
+def choose_quietswindow(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.8, **fit_kw):
+    """Find window of maximum correlation between two probes and fit the background there.
+
+    Parameters
+    ----------
+    span    : (start, end) Unix times to search, e.g. the half-hour before periapsis
+    exclude : list of (start, end) intervals windows must not overlap (e.g. shadow)
+    r_min   : minimum r for the result to count as a usable background
+    fit_kw  : passed on to fit_background (max_lag, dt, min_points)
+
+    Returns
+    -------
+    The best fit dict (as from fit_background) with an extra key
+        ok   True if r >= r_min and the shift is not at the edge of the search
+    or None if no window had enough data.
+    """
+    best = None
+    for start in np.arange(span[0], span[1] - length + 1e-9, step):
+        w = (start, start + length)
+        if any(w[0] < b and w[1] > a for a, b in exclude): # overlaps an excluded interval
+            continue
+        try:
+            fit = fit_background(t_target, B_target, t_monitor, B_monitor, w, **fit_kw)
+        except ValueError: # not enough data in this window
+            continue
+        if best is None or fit['r'] > best['r']:
+            best = fit
+    if best is not None:
+        best['ok'] = bool(best['r'] >= r_min and not best['at_edge'])
+    return best
