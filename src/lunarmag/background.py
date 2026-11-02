@@ -73,7 +73,7 @@ def background_at(t, t_monitor, B_monitor, fit):
 
 
 #choose quiet window via maximum correlation:
-def choose_quietswindow(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.8, **fit_kw):
+def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.8, **fit_kw):
     """Find window of maximum correlation between two probes and fit the background there.
 
     Parameters
