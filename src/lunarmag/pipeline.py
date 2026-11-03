@@ -27,47 +27,52 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     t_peri        : Unix time of periapsis
     t_b, B_b      : target (e.g. THB) FGM times and GSE field, (N, 3)
     t_c, B_c      : monitor (e.g. THC) FGM times and GSE field
-    trk           : load_track result for the target ON its FGM times within the analysis window
+    trk           : load_track result for the target on its FGM times (splined) within the analysis window
     trk_raw       : load_track result for the target at 1-min resolution over the whole load range
     trk_mon       : load_track result for the monitor at 1-min resolution
     half_window   : analysis window is t_peri +- half_window (s)
-    search        : quiet-window search spans: (t_peri - search[0], t_peri - search[1]) before,
-                    and (t_peri + search[1], t_peri + half_window) after
+    search        : quiet-window search spans: (t_peri - search[0], t_peri - search[1]) before and (t_peri + search[1], t_peri + half_window) after
     alt_max       : only samples below this altitude (km) enter the summary numbers
     rotate        : function (times, B_gse) -> B_sel; gse2sel by default
     window_kw     : passed to choose_quiet_window (length, step, sigma_max, r_min, ...)
     """
-    #background: quiet window before the pass (and after as a consistency check)
-    shadows = shadow_intervals(trk_raw['t'], trk_raw['shadow'])
+
+    #background: quiet window before and after pass
+    shadows = shadow_intervals(trk_raw['t'], trk_raw['shadow']) #list of (start, end) times for all shadow periods
+
+    #find best quiet window before periapsis
     fit = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri - search[0], t_peri - search[1]), exclude=shadows, **window_kw)
     if fit is None:
         raise RuntimeError('no quiet window with enough data before periapsis')
+
+    #find best quiet window after periapsis
     fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + half_window), exclude=shadows, **window_kw)
 
     #measured lunar effect on target time series
-    t = trk['t']
-    B_meas = B_b[np.isin(t_b, t)] #target field for given timne series
-    B_bg = background_at(t, t_c, B_c, fit)
-    dB_gse = B_meas - B_bg
+    t = trk['t'] #analysis times
+    B_meas = B_b[np.isin(t_b, t)] #target field for given time series
+    B_bg = background_at(t, t_c, B_c, fit) #predicted background
+    dB_gse = B_meas - B_bg #element-wise subtraction to obtain total effect due to Moon
 
     #rotate into local east, north, up at the spacecraft
-    dB = np.column_stack(sel2enr(rotate(t, dB_gse), trk['lon'], trk['lat']))
+    dB = np.column_stack(sel2enr(rotate(t, dB_gse), trk['lon'], trk['lat'])) #GSE to SEL to local
     bg = np.column_stack(sel2enr(rotate(t, B_bg), trk['lon'], trk['lat']))
-    svm = np.column_stack(svm_field(trk['lon'], trk['lat'], trk['alt']))
-    dBi = dB - svm #interaction field
+    svm = np.column_stack(svm_field(trk['lon'], trk['lat'], trk['alt'])) 
+    dBi = dB - svm #rotated interaction field
 
     #summary over sunlit, low-altitude, valid samples
-    use = (~trk['shadow']) & (trk['alt'] < alt_max) & np.all(np.isfinite(dB), axis=1)
-    sig = fit['sigma_mag']
-    k_peri = int(np.argmin(trk['alt']))
+    use = (~trk['shadow']) & (trk['alt'] < alt_max) & np.all(np.isfinite(dB), axis=1) #mask requiring not in shadow, low altitide, and all 3 components of dB exist
+    sig = fit['sigma_mag'] #noise floor
+    k_peri = int(np.argmin(trk['alt'])) #index of periapsis
+
+    #dictionary
     s = {
         't_peri': t_peri,
         'min_alt_km': float(trk['alt'][k_peri]),
         'lon_peri': float(trk['lon'][k_peri]), 'lat_peri': float(trk['lat'][k_peri]),
         'sza_peri': float(trk['sza'][k_peri]),
         'shadow_s': float(sum(b - a for a, b in shadows)),
-        'monitor_upstream': bool(np.median(trk_mon['xyz_sse'][:, 0]) > 0
-                                 and np.min(np.linalg.norm(trk_mon['xyz_sse'], axis=1)) > 3 * R_M),
+        'monitor_upstream': bool(np.median(trk_mon['xyz_sse'][:, 0]) > 0 and np.min(np.linalg.norm(trk_mon['xyz_sse'], axis=1)) > 3 * R_M),
         'monitor_in_shadow': bool(trk_mon['shadow'].any()),
         'bg_window': fit['window'], 'bg_shift': fit['shift'], 'bg_r': fit['r'],
         'bg_sigma': sig, 'bg_ok': fit['ok'],
@@ -87,8 +92,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
             'snr': float(mag(dB).max() / sig),
             'frac_above_3sigma': float(np.mean(mag(dB) > 3 * sig)),
             # + : interaction field along the crustal field (compression); - : against it (cancellation)
-            'compression_nT': float(np.median(np.sum(dBi_u[strong] * svm_u[strong], axis=1) / np.linalg.norm(svm_u[strong], axis=1)))
-                              if strong.any() else np.nan,
+            'compression_nT': float(np.median(np.sum(dBi_u[strong] * svm_u[strong], axis=1) / np.linalg.norm(svm_u[strong], axis=1))) if strong.any() else np.nan,
             # angle between the upstream IMF and the crustal field where the crust is strongest
             'shear_deg': _angle(bg[use][k], svm_u[k]),
         })
@@ -119,8 +123,7 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
 
     trk_raw = load_track(probe, trange)
     trk_mon = load_track(monitor, trange)
-    sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0]))
-           & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
+    sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0])) & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
     trk = load_track(probe, trange, t_out=b.times[sel])
 
     return analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, search=search, **kw)
