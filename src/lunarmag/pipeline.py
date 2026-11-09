@@ -1,9 +1,9 @@
 """For analysing measured lunar effect versus the SVM crustal field for a single pass.
 
 For one low-altitude pass of an ARTEMIS probe:
-    dB  = B_measured - B_background     (the Moon's total effect: crust + interaction)
-    dBi = dB - B_SVM                    (the interaction field: what the vacuum crust can't explain)
-both in local east, north, up, plus a one-row summary for the results table.
+    dB  = B_measured - B_background (the Moon's total effect: crust + interaction field)
+    dBi = dB - B_SVM (the interaction field)
+both in local east, north, up.
 """
 import numpy as np
 
