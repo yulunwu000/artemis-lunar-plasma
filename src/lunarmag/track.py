@@ -26,11 +26,19 @@ def in_shadow(xyz_sse):
     return (xyz_sse[:, 0] < 0) & (np.hypot(xyz_sse[:, 1], xyz_sse[:, 2]) < R_M)
 
 
-def shadow_intervals(t, shadow, pad=0.0):
-    """List of (start, end) times of each continuous stretch where shadow is True."""
+def shadow_intervals(t, shadow, pad=0.0, outer=False):
+    """
+    List of (start, end) times of each continuous stretch where shadow is True.
+    pad   : seconds added to both ends of each interval
+    outer : if True, each interval runs from the last lit sample before to the first lit sample after, so it always contains the true shadow (use for exclusions).
+            If False, from the first to the last shadowed sample (use for durations).
+    """
     s = np.concatenate([[False], np.asarray(shadow, bool), [False]])
     starts = np.flatnonzero(~s[:-1] & s[1:]) # False -> True
     ends = np.flatnonzero(s[:-1] & ~s[1:]) - 1 # last True before True -> False
+    if outer:
+        starts = np.maximum(starts - 1, 0)
+        ends = np.minimum(ends + 1, len(t) - 1)
     return [(t[a] - pad, t[b] + pad) for a, b in zip(starts, ends)]
 
 

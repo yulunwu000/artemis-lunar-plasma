@@ -9,7 +9,7 @@ import numpy as np
 
 from .svm import R_M, svm_field
 from .frames import sel2enr, gse2sel
-from .track import load_track, shadow_intervals
+from .track import load_track, shadow_intervals, in_intervals
 from .background import background_at, choose_quiet_window
 
 
@@ -19,7 +19,7 @@ def _angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
-def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, **window_kw):
+def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, **window_kw):
     """The calculation, given data already loaded (so it can be tested with fake data).
 
     Parameters
@@ -39,14 +39,15 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
 
     #background: quiet window before and after pass
     shadows = shadow_intervals(trk_raw['t'], trk_raw['shadow']) #list of (start, end) times for all shadow periods
+    near_shadow = shadow_intervals(trk_raw['t'], trk_raw['shadow'], pad=shadow_pad, outer=True) #add buffer
 
     #find best quiet window before periapsis
-    fit = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri - search[0], t_peri - search[1]), exclude=shadows, **window_kw)
+    fit = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri - search[0], t_peri - search[1]), exclude=near_shadow, **window_kw)
     if fit is None:
         raise RuntimeError('no quiet window with enough data before periapsis')
 
     #find best quiet window after periapsis
-    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + half_window), exclude=shadows, **window_kw)
+    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + half_window), exclude=near_shadow, **window_kw)
 
     #measured lunar effect on target time series
     t = trk['t'] #analysis times
@@ -61,7 +62,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     dBi = dB - svm #rotated interaction field
 
     #summary over sunlit, low-altitude, valid samples
-    use = (~trk['shadow']) & (trk['alt'] < alt_max) & np.all(np.isfinite(dB), axis=1) #mask requiring not in shadow, low altitide, and all 3 components of dB exist
+    use = (~trk['shadow']) & (~in_intervals(t, near_shadow)) & (trk['alt'] < alt_max) & np.all(np.isfinite(dB), axis=1) #mask requiring not in shadow, low altitide, and all 3 components of dB exist
     sig = fit['sigma_mag'] #noise floor
     k_peri = int(np.argmin(trk['alt'])) #index of periapsis
 
@@ -79,6 +80,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         'post_shift': np.nan if fit_post is None else fit_post['shift'],
         'post_sigma': np.nan if fit_post is None else fit_post['sigma_mag'],
         'n_used': int(use.sum()),
+        'shadow_pad': shadow_pad,
     }
     if use.any():
         mag = lambda v: np.linalg.norm(v[use], axis=1)
@@ -97,7 +99,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
             'shear_deg': _angle(bg[use][k], svm_u[k]),
         })
 
-    return {'summary': s, 't': t, 'alt': trk['alt'], 'lon': trk['lon'], 'lat': trk['lat'],
+    return {'summary': s, 't': t, 'use': use, 'alt': trk['alt'], 'lon': trk['lon'], 'lat': trk['lat'],
             'sza': trk['sza'], 'shadow': trk['shadow'], 'B_meas_gse': B_meas, 'B_bg_gse': B_bg,
             'dB_enr': dB, 'svm_enr': svm, 'dBi_enr': dBi, 'bg_enr': bg,
             'fit': fit, 'fit_post': fit_post}
