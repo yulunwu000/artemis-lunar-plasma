@@ -26,13 +26,21 @@ def in_shadow(xyz_sse):
     return (xyz_sse[:, 0] < 0) & (np.hypot(xyz_sse[:, 1], xyz_sse[:, 2]) < R_M)
 
 
-def shadow_intervals(t, shadow):
+def shadow_intervals(t, shadow, pad=0.0):
     """List of (start, end) times of each continuous stretch where shadow is True."""
     s = np.concatenate([[False], np.asarray(shadow, bool), [False]])
     starts = np.flatnonzero(~s[:-1] & s[1:]) # False -> True
     ends = np.flatnonzero(s[:-1] & ~s[1:]) - 1 # last True before True -> False
-    return [(t[a], t[b]) for a, b in zip(starts, ends)]
+    return [(t[a] - pad, t[b] + pad) for a, b in zip(starts, ends)]
 
+
+def in_intervals(t, intervals):
+    """True where t falls inside any of the (start, end) intervals."""
+    t = np.asarray(t, dtype=float)
+    mask = np.zeros(len(t), dtype=bool)
+    for a, b in intervals:
+        mask |= (t >= a) & (t <= b)
+    return mask
 
 def load_track(probe, trange, t_out=None):
     """Load an ARTEMIS probe's position and derive everything the pipeline needs.
