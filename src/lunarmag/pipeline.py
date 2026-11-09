@@ -19,7 +19,7 @@ def _angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
-def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, **window_kw):
+def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = 3600.00, **window_kw):
     """The calculation, given data already loaded (so it can be tested with fake data).
 
     Parameters
@@ -47,7 +47,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         raise RuntimeError('no quiet window with enough data before periapsis')
 
     #find best quiet window after periapsis
-    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + half_window), exclude=near_shadow, **window_kw)
+    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + post_search), exclude=near_shadow, **window_kw)
 
     #measured lunar effect on target time series
     t = trk['t'] #analysis times
@@ -79,6 +79,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         'bg_sigma': sig, 'bg_ok': fit['ok'],
         'post_shift': np.nan if fit_post is None else fit_post['shift'],
         'post_sigma': np.nan if fit_post is None else fit_post['sigma_mag'],
+        'post_window': None if fit_post is None else fit_post['window'],
         'n_used': int(use.sum()),
         'shadow_pad': shadow_pad,
     }
@@ -102,10 +103,10 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     return {'summary': s, 't': t, 'use': use, 'alt': trk['alt'], 'lon': trk['lon'], 'lat': trk['lat'],
             'sza': trk['sza'], 'shadow': trk['shadow'], 'B_meas_gse': B_meas, 'B_bg_gse': B_bg,
             'dB_enr': dB, 'svm_enr': svm, 'dBi_enr': dBi, 'bg_enr': bg,
-            'fit': fit, 'fit_post': fit_post}
+            'fit': fit, 'fit_post': fit_post, 'post_window': None if fit_post is None else fit_post['window']}
 
 
-def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), eclipse_corrections=True, **kw):
+def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), post_search=3600.0, eclipse_corrections=True, **kw):
     """Load everything for one pass and run analyse_arrays.
 
     t_peri : periapsis time, as a string ('2013-12-04/00:12') or Unix seconds
@@ -115,7 +116,7 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
 
     t_peri = time_double(t_peri)
     pad = 120.0
-    t0, t1 = t_peri - max(half_window, search[0]) - pad, t_peri + half_window + pad
+    t0, t1 = t_peri - max(half_window, search[0]) - pad, t_peri + post_search + pad
     trange = [time_string(t0), time_string(t1)]
 
     pyspedas.projects.themis.fgm(probe=[probe, monitor], trange=trange, level='l2', time_clip=True, apply_eclipse_corrections=eclipse_corrections)
@@ -128,4 +129,4 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0])) & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
     trk = load_track(probe, trange, t_out=b.times[sel])
 
-    return analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, search=search, **kw)
+    return analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, post_search=post_search, **kw)
