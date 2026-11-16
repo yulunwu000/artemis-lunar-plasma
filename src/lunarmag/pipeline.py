@@ -135,8 +135,11 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
 
     pyspedas.projects.themis.fgm(probe=[probe, monitor], trange=trange, level='l2', time_clip=True, apply_eclipse_corrections=eclipse_corrections)
     b, c = get_data(f'th{probe}_fgs_gse'), get_data(f'th{monitor}_fgs_gse')
-    if b is None or c is None:
-        raise RuntimeError('FGM data missing for target or monitor')
+    for name, d in ((f'th{probe}', b), (f'th{monitor}', c)):
+        if d is None:
+            raise RuntimeError(f'{name}: no FGM data loaded')
+        if not (d.times[0] <= t_peri <= d.times[-1]):
+            raise RuntimeError(f'{name}: FGM data do not contain periapsis (stale or missing data)')
 
     trk_raw = load_track(probe, trange)
     trk_mon = load_track(monitor, trange)
