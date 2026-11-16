@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lunarmag"
+version = "0.1.0"
+description = "Compare ARTEMIS magnetic field data with the Tsunakawa et al. (2015) lunar crustal field model"
+requires-python = ">=3.9"
+dependencies = ["numpy", "scipy", "matplotlib", "pyshtools", "pyspedas>=2.2.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

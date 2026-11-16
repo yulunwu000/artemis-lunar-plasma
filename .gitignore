@@ -14,3 +14,4 @@ kaguya_data/
 
 # macOS
 .DS_StoreMachineLearning/
+*.egg-info/
