@@ -10,7 +10,7 @@ import numpy as np
 from .svm import R_M, svm_field
 from .frames import sel2enr, gse2sel
 from .track import load_track, shadow_intervals, in_intervals
-from .background import background_at, choose_quiet_window
+from .background import background_at, choose_quiet_window, MAX_LAG
 
 POST_SEARCH = 1200.0 # default reach (s) of post-pass background check
 
@@ -129,7 +129,7 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     from pyspedas import get_data, time_double, time_string
 
     t_peri = time_double(t_peri)
-    pad = 120.0
+    pad = kw.get('max_lag', MAX_LAG) + 10.0
     t0, t1 = t_peri - max(half_window, search[0]) - pad, t_peri + post_search + pad
     trange = [time_string(t0), time_string(t1)]
 
@@ -147,3 +147,19 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     trk = load_track(probe, trange, t_out=b.times[sel])
 
     return analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, post_search=post_search, **kw)
+
+def run_passes(t_peris, **kw):
+    """Run analyse_pass on each periapsis time.
+
+    Returns (results, failures): one summary row per successful pass, and the
+    time and error message of every pass that failed.
+    """
+    import pandas as pd
+    rows, failures = [], []
+    for i, tp in enumerate(t_peris):
+        try:
+            rows.append(analyse_pass(tp, **kw)['summary'])
+        except Exception as e:
+            failures.append({'t_peri': tp, 'error': f'{type(e).__name__}: {e}'})
+        print(f'\r{i + 1}/{len(t_peris)} done, {len(failures)} failed', end='')
+    return pd.DataFrame(rows), pd.DataFrame(failures)

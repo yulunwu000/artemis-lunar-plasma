@@ -7,6 +7,7 @@ offset, and the residual scatter (noise floor) during a quiet interval when both
 
 import numpy as np
 
+MAX_LAG = 120.0 
 
 def on_grid(t, B, t_new, max_gap=10.0):
     """Linearly interpolate vector data B (N, 3) at times t onto times t_new.
@@ -27,7 +28,7 @@ def on_grid(t, B, t_new, max_gap=10.0):
     return out
 
 
-def fit_background(t_target, B_target, t_monitor, B_monitor, window, max_lag=120.0, dt=1.0, min_points=60):
+def fit_background(t_target, B_target, t_monitor, B_monitor, window, max_lag=MAX_LAG, dt=1.0, min_points=60):
     """Fit the monitor -> target delay, offset and noise floor over a quiet window.
 
     Parameters
