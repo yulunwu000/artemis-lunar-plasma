@@ -68,6 +68,15 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     sig = fit['sigma_mag'] #noise floor
     k_peri = int(np.argmin(trk['alt'])) #index of periapsis
 
+    # post-pass check: did the background stay stable across periapsis?
+    if fit_post is None:
+        post_status = 'none' #no window with enough data
+    elif not fit_post['ok']:
+        post_status = 'disturbed' #a window exists but fails the quality test
+    else:
+        post_status = 'ok'
+    post_good = post_status == 'ok'
+
     #dictionary
     s = {
         't_peri': t_peri,
@@ -82,6 +91,9 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         'post_shift': np.nan if fit_post is None else fit_post['shift'],
         'post_sigma': np.nan if fit_post is None else fit_post['sigma_mag'],
         'post_window': None if fit_post is None else fit_post['window'],
+        'post_status': post_status,
+        'shift_drift_s': fit_post['shift'] - fit['shift'] if post_good else np.nan,
+        'offset_drift_nT': float(np.linalg.norm(fit_post['offset'] - fit['offset'])) if post_good else np.nan,
         'n_used': int(use.sum()),
         'shadow_pad': shadow_pad,
     }
