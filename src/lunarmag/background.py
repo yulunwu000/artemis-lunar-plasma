@@ -8,13 +8,23 @@ offset, and the residual scatter (noise floor) during a quiet interval when both
 import numpy as np
 
 
-def on_grid(t, B, t_new):
+def on_grid(t, B, t_new, max_gap=10.0):
     """Linearly interpolate vector data B (N, 3) at times t onto times t_new.
 
-    All times are Unix seconds. Times outside the data return NaN rather than copies of the first or last sample.
+    Returns NaN outside the data range, and inside data gaps longer than
+    max_gap seconds, rather than drawing straight lines across them.
+    t must be sorted.
     """
+    t = np.asarray(t, dtype=float)
     t_new = np.asarray(t_new, dtype=float)
-    return np.column_stack([np.interp(t_new, t, B[:, i], left=np.nan, right=np.nan) for i in range(3)])
+    out = np.column_stack([np.interp(t_new, t, B[:, i], left=np.nan, right=np.nan)
+                           for i in range(3)])
+
+    j = np.clip(np.searchsorted(t, t_new), 1, len(t) - 1)   # t[j-1] < t_new <= t[j]
+    gap = t[j] - t[j - 1]  #spacing of the samples either side
+    gap[t[j] == t_new] = 0.0  #landing exactly on a sample is never a gap
+    out[gap > max_gap] = np.nan
+    return out
 
 
 def fit_background(t_target, B_target, t_monitor, B_monitor, window, max_lag=120.0, dt=1.0, min_points=60):
