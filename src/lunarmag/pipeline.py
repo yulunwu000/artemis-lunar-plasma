@@ -12,6 +12,7 @@ from .frames import sel2enr, gse2sel
 from .track import load_track, shadow_intervals, in_intervals
 from .background import background_at, choose_quiet_window
 
+POST_SEARCH = 1200.0 # default reach (s) of post-pass background check
 
 def _angle(a, b):
     """Angle (deg) between two vectors."""
@@ -19,7 +20,7 @@ def _angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
-def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = 3600.00, **window_kw):
+def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = POST_SEARCH, **window_kw):
     """The calculation, given data already loaded (so it can be tested with fake data).
 
     Parameters
@@ -34,6 +35,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     search        : quiet-window search spans: (t_peri - search[0], t_peri - search[1]) before and (t_peri + search[1], t_peri + half_window) after
     alt_max       : only samples below this altitude (km) enter the summary numbers
     rotate        : function (times, B_gse) -> B_sel; gse2sel by default
+    post_search   : the post-pass check searches (t_peri + search[1], t_peri + post_search); pass a larger value (e.g. 3600) to look beyond a long shadow
     window_kw     : passed to choose_quiet_window (length, step, sigma_max, r_min, ...)
     """
 
@@ -106,7 +108,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
             'fit': fit, 'fit_post': fit_post, 'post_window': None if fit_post is None else fit_post['window']}
 
 
-def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), post_search=3600.0, eclipse_corrections=True, **kw):
+def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), post_search=POST_SEARCH, eclipse_corrections=True, **kw):
     """Load everything for one pass and run analyse_arrays.
 
     t_peri : periapsis time, as a string ('2013-12-04/00:12') or Unix seconds
