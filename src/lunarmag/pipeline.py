@@ -11,6 +11,7 @@ from .svm import R_M, svm_field
 from .frames import sel2enr, gse2sel
 from .track import load_track, shadow_intervals, in_intervals
 from .background import background_at, choose_quiet_window, MAX_LAG
+from .regime import tail_angle, regime_geo
 
 POST_SEARCH = 1200.0 # default reach (s) of post-pass background check
 
@@ -146,7 +147,16 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0])) & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
     trk = load_track(probe, trange, t_out=b.times[sel])
 
-    return analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, post_search=post_search, **kw)
+    r = analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, search=search, post_search=post_search, **kw)
+
+    pos = get_data(f'th{probe}_pos_gse')
+    if pos is None:
+        pyspedas.projects.themis.state(probe=probe, trange=trange, time_clip=True)
+        pos = get_data(f'th{probe}_pos_gse')
+    near = np.abs(pos.times - t_peri) <= half_window
+    ang = float(np.median(tail_angle(pos.y[near])))
+    r['summary'].update({'tail_angle_deg': ang, 'regime_geo': regime_geo(ang)})
+    return r
 
 def run_passes(t_peris, **kw):
     """Run analyse_pass on each periapsis time.
