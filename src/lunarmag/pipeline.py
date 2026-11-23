@@ -150,8 +150,8 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
         if not (d.times[0] <= t_peri <= d.times[-1]):
             raise RuntimeError(f'{name}: FGM data do not contain periapsis (stale or missing data)')
 
-    trk_raw = load_track(probe, trange, trange, no_update=no_update)
-    trk_mon = load_track(monitor, trange, trange, no_update=no_update)
+    trk_raw = load_track(probe, trange, no_update=no_update)
+    trk_mon = load_track(monitor, trange, no_update=no_update)
     sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0])) & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
     trk = load_track(probe, trange, t_out=b.times[sel], no_update=no_update)
 

@@ -1,0 +1,4 @@
+pass_id,t_peri,error
+2015-01,2015-02-19/09:02:00,RuntimeError: no quiet window with enough data before periapsis
+2015-07,2015-12-11/14:25:00,RuntimeError: no quiet window with enough data before periapsis
+2015-08,2015-12-12/15:15:00,RuntimeError: no quiet window with enough data before periapsis

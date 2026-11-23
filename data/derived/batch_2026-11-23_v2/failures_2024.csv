@@ -1,7 +1,0 @@
-pass_id,t_peri,error
-2024-01,2024-01-08/18:48:00,ValueError: could not convert string to float: '2024-01-08 18:15:50.000000'
-2024-02,2024-01-09/19:31:00,ValueError: could not convert string to float: '2024-01-09 18:58:50.000000'
-2024-03,2024-05-08/06:28:00,ValueError: could not convert string to float: '2024-05-08 05:55:50.000000'
-2024-04,2024-05-09/07:11:00,ValueError: could not convert string to float: '2024-05-09 06:38:50.000000'
-2024-05,2024-12-09/06:03:00,ValueError: could not convert string to float: '2024-12-09 05:30:50.000000'
-2024-06,2024-12-10/06:46:00,ValueError: could not convert string to float: '2024-12-10 06:13:50.000000'
