@@ -18,8 +18,7 @@ def on_grid(t, B, t_new, max_gap=10.0):
     """
     t = np.asarray(t, dtype=float)
     t_new = np.asarray(t_new, dtype=float)
-    out = np.column_stack([np.interp(t_new, t, B[:, i], left=np.nan, right=np.nan)
-                           for i in range(3)])
+    out = np.column_stack([np.interp(t_new, t, B[:, i], left=np.nan, right=np.nan) for i in range(3)])
 
     j = np.clip(np.searchsorted(t, t_new), 1, len(t) - 1)   # t[j-1] < t_new <= t[j]
     gap = t[j] - t[j - 1]  #spacing of the samples either side
@@ -84,7 +83,7 @@ def background_at(t, t_monitor, B_monitor, fit):
 
 
 #choose quiet window via maximum correlation:
-def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.8, **fit_kw):
+def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.5, **fit_kw):
     """Find window of maximum correlation between two probes and fit the background there.
 
     Parameters

@@ -21,7 +21,7 @@ def _angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
-def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = POST_SEARCH, **window_kw):
+def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), bg_alt_min=870.0, alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = POST_SEARCH, **window_kw):
     """The calculation, given data already loaded (so it can be tested with fake data).
 
     Parameters
@@ -38,19 +38,23 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     rotate        : function (times, B_gse) -> B_sel; gse2sel by default
     post_search   : the post-pass check searches (t_peri + search[1], t_peri + post_search); pass a larger value (e.g. 3600) to look beyond a long shadow
     window_kw     : passed to choose_quiet_window (length, step, sigma_max, r_min, ...)
+    bg_alt_min    : background windows must have the target above this altitude (km); 870 km = 0.5 R_M, the ambient-plasma limit of Liuzzo et al. (2022)
     """
 
     #background: quiet window before and after pass
     shadows = shadow_intervals(trk_raw['t'], trk_raw['shadow']) #list of (start, end) times for all shadow periods
     near_shadow = shadow_intervals(trk_raw['t'], trk_raw['shadow'], pad=shadow_pad, outer=True) #add buffer
 
+    near_moon = shadow_intervals(trk_raw['t'], trk_raw['alt'] < bg_alt_min, outer=True)
+    bg_exclude = near_shadow + near_moon
+
     #find best quiet window before periapsis
-    fit = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri - search[0], t_peri - search[1]), exclude=near_shadow, **window_kw)
+    fit = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri - search[0], t_peri - search[1]), exclude=bg_exclude, **window_kw)
     if fit is None:
         raise RuntimeError('no quiet window with enough data before periapsis')
 
     #find best quiet window after periapsis
-    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + post_search), exclude=near_shadow, **window_kw)
+    fit_post = choose_quiet_window(t_b, B_b, t_c, B_c, span=(t_peri + search[1], t_peri + post_search), exclude=bg_exclude, **window_kw)
 
     #measured lunar effect on target time series
     t = trk['t'] #analysis times
@@ -158,18 +162,24 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     r['summary'].update({'tail_angle_deg': ang, 'regime_geo': regime_geo(ang)})
     return r
 
-def run_passes(t_peris, **kw):
+def run_passes(t_peris, ids=None, **kw):
     """Run analyse_pass on each periapsis time.
+
+    t_peris : list of periapsis times
+    ids     : time labels (optional, e.g. '2013-13'); defaults to 0, 1, 2, ...
 
     Returns (results, failures): one summary row per successful pass, and the
     time and error message of every pass that failed.
     """
     import pandas as pd
+    ids = list(range(len(t_peris))) if ids is None else list(ids)
     rows, failures = [], []
-    for i, tp in enumerate(t_peris):
+    for i, (pid, tp) in enumerate(zip(ids, t_peris)):
         try:
-            rows.append(analyse_pass(tp, **kw)['summary'])
+            s = analyse_pass(tp, **kw)['summary']
+            s['pass_id'] = pid
+            rows.append(s)
         except Exception as e:
-            failures.append({'t_peri': tp, 'error': f'{type(e).__name__}: {e}'})
+           failures.append({'pass_id': pid, 't_peri': tp, 'error': f'{type(e).__name__}: {e}'})
         print(f'\r{i + 1}/{len(t_peris)} done, {len(failures)} failed', end='')
     return pd.DataFrame(rows), pd.DataFrame(failures)
