@@ -8,7 +8,9 @@ __pycache__/
 
 # PySPEDAS downloads
 themis_data/
-data/
+data/*
+!data/raw/
+!data/README.md
 *.cdf
 kaguya_data/
 
