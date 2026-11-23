@@ -1,0 +1,4 @@
+date: 2026-11-23
+code commit: a12ac3e
+passes file: thb_2012_2025_all_passes.csv
+defaults: sigma_max=0.5, r_min=0.5, max_lag=120, shadow_pad=120, bg_alt_min=0

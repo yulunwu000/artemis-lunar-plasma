@@ -1,0 +1,11 @@
+pass_id,t_peri,error
+2020-01,2020-01-20/15:49:00,ValueError: could not convert string to float: '2020-01-20 15:16:50.000000'
+2020-02,2020-01-21/16:38:00,ValueError: could not convert string to float: '2020-01-21 16:05:50.000000'
+2020-03,2020-02-04/05:46:00,ValueError: could not convert string to float: '2020-02-04 05:13:50.000000'
+2020-04,2020-02-16/17:55:00,ValueError: could not convert string to float: '2020-02-16 17:22:50.000000'
+2020-05,2020-03-02/07:53:00,ValueError: could not convert string to float: '2020-03-02 07:20:50.000000'
+2020-06,2020-03-14/20:03:00,ValueError: could not convert string to float: '2020-03-14 19:30:50.000000'
+2020-07,2020-03-29/10:00:00,ValueError: could not convert string to float: '2020-03-29 09:27:50.000000'
+2020-08,2020-04-24/11:15:00,ValueError: could not convert string to float: '2020-04-24 10:42:50.000000'
+2020-09,2020-10-15/10:56:00,ValueError: could not convert string to float: '2020-10-15 10:23:50.000000'
+2020-10,2020-10-16/11:42:00,ValueError: could not convert string to float: '2020-10-16 11:09:50.000000'

@@ -10,7 +10,9 @@ __pycache__/
 themis_data/
 data/*
 !data/raw/
+!data/derived/
 !data/README.md
+data/derived/trial_*
 *.cdf
 kaguya_data/
 

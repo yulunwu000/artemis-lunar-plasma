@@ -1,0 +1,8 @@
+pass_id,t_peri,error
+2018-01,2018-05-14/22:15:00,ValueError: could not convert string to float: '2018-05-14 21:42:50.000000'
+2018-02,2018-09-10/17:14:00,ValueError: could not convert string to float: '2018-09-10 16:41:50.000000'
+2018-03,2018-09-11/18:02:00,ValueError: could not convert string to float: '2018-09-11 17:29:50.000000'
+2018-04,2018-09-12/18:51:00,ValueError: could not convert string to float: '2018-09-12 18:18:50.000000'
+2018-05,2018-10-07/19:14:00,ValueError: could not convert string to float: '2018-10-07 18:41:50.000000'
+2018-06,2018-10-08/20:02:00,RuntimeError: thc: FGM data do not contain periapsis (stale or missing data)
+2018-07,2018-10-09/20:50:00,RuntimeError: thc: FGM data do not contain periapsis (stale or missing data)

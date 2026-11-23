@@ -1,0 +1,9 @@
+pass_id,t_peri,error
+2015-01,2015-02-19/09:02:00,ValueError: could not convert string to float: '2015-02-19 08:29:50.000000'
+2015-02,2015-03-18/11:55:00,ValueError: could not convert string to float: '2015-03-18 11:22:50.000000'
+2015-03,2015-05-10/16:59:00,ValueError: could not convert string to float: '2015-05-10 16:26:50.000000'
+2015-04,2015-06-19/08:30:00,ValueError: could not convert string to float: '2015-06-19 07:57:50.000000'
+2015-05,2015-06-20/09:21:00,ValueError: could not convert string to float: '2015-06-20 08:48:50.000000'
+2015-06,2015-07-16/11:23:00,ValueError: could not convert string to float: '2015-07-16 10:50:50.000000'
+2015-07,2015-12-11/14:25:00,ValueError: could not convert string to float: '2015-12-11 13:52:50.000000'
+2015-08,2015-12-12/15:15:00,ValueError: could not convert string to float: '2015-12-12 14:42:50.000000'
