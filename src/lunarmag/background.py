@@ -83,7 +83,7 @@ def background_at(t, t_monitor, B_monitor, fit):
 
 
 #choose quiet window via maximum correlation:
-def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), r_min=0.5, **fit_kw):
+def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=180.0, step=30.0, exclude=(), sigma_max=0.5, r_min=0.5, **fit_kw):
     """Find window of maximum correlation between two probes and fit the background there.
 
     Parameters
@@ -92,6 +92,7 @@ def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=1
     exclude : list of (start, end) intervals windows must not overlap (e.g. shadow)
     r_min   : minimum r for the result to count as a usable background
     fit_kw  : passed on to fit_background (max_lag, dt, min_points)
+    sigma_max : largest acceptable noise floor for |dB| (nT)
 
     Returns
     -------
@@ -111,5 +112,5 @@ def choose_quiet_window(t_target, B_target, t_monitor, B_monitor, span, length=1
         if best is None or fit['r'] > best['r']:
             best = fit
     if best is not None:
-        best['ok'] = bool(best['r'] >= r_min and not best['at_edge'])
+        best['ok'] = bool(best['sigma_mag'] <= sigma_max and best['r'] >= r_min and not best['at_edge'])
     return best

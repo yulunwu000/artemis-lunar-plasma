@@ -50,7 +50,7 @@ def in_intervals(t, intervals):
         mask |= (t >= a) & (t <= b)
     return mask
 
-def load_track(probe, trange, t_out=None):
+def load_track(probe, trange, t_out=None, no_update=False):
     """Load an ARTEMIS probe's position and derive everything the pipeline needs.
 
     Parameters
@@ -72,7 +72,7 @@ def load_track(probe, trange, t_out=None):
     from pyspedas import get_data
 
     names = [f'th{probe}_pos_sel', f'th{probe}_pos_sse']
-    pyspedas.projects.themis.state(probe=probe, trange=trange, varnames=names, time_clip=True)
+    pyspedas.projects.themis.state(probe=probe, trange=trange, varnames=names, time_clip=True, no_update=no_update)
     sel, sse = get_data(names[0]), get_data(names[1])
     t, xyz_sel, xyz_sse = sel.times, sel.y, sse.y
 

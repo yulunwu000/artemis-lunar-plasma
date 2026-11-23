@@ -21,7 +21,7 @@ def _angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
-def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), bg_alt_min=870.0, alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = POST_SEARCH, **window_kw):
+def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_window=1200.0, search=(1800.0, 120.0), bg_alt_min=0.0, alt_max=300.0, rotate=gse2sel, shadow_pad=120.0, post_search = POST_SEARCH, **window_kw):
     """The calculation, given data already loaded (so it can be tested with fake data).
 
     Parameters
@@ -38,7 +38,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
     rotate        : function (times, B_gse) -> B_sel; gse2sel by default
     post_search   : the post-pass check searches (t_peri + search[1], t_peri + post_search); pass a larger value (e.g. 3600) to look beyond a long shadow
     window_kw     : passed to choose_quiet_window (length, step, sigma_max, r_min, ...)
-    bg_alt_min    : background windows must have the target above this altitude (km); 870 km = 0.5 R_M, the ambient-plasma limit of Liuzzo et al. (2022)
+    bg_alt_min    : background windows must have the target above this altitude (km); default 0.
     """
 
     #background: quiet window before and after pass
@@ -80,7 +80,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         post_status = 'disturbed' #a window exists but fails the quality test
     else:
         post_status = 'ok'
-    post_good = post_status == 'ok'
+    post_good = (post_status == 'ok') and fit['ok']
 
     #dictionary
     s = {
@@ -101,6 +101,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
         'offset_drift_nT': float(np.linalg.norm(fit_post['offset'] - fit['offset'])) if post_good else np.nan,
         'n_used': int(use.sum()),
         'shadow_pad': shadow_pad,
+        'bg_alt_min': bg_alt_min,
     }
     if use.any():
         mag = lambda v: np.linalg.norm(v[use], axis=1)
@@ -115,6 +116,9 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
             'frac_above_3sigma': float(np.mean(mag(dB) > 3 * sig)),
             # + : interaction field along the crustal field (compression); - : against it (cancellation)
             'compression_nT': float(np.median(np.sum(dBi_u[strong] * svm_u[strong], axis=1) / np.linalg.norm(svm_u[strong], axis=1))) if strong.any() else np.nan,
+            'n_strong': int(strong.sum()),
+            'peak_dBi_crust': float(np.linalg.norm(dBi_u[strong], axis=1).max()) if strong.any() else np.nan,
+            't_peak_dB': float(t[use][np.argmax(mag(dB))] - t_peri),
             # angle between the upstream IMF and the crustal field where the crust is strongest
             'shear_deg': _angle(bg[use][k], svm_u[k]),
         })
@@ -125,7 +129,7 @@ def analyse_arrays(t_peri, t_b, B_b, t_c, B_c, trk, trk_raw, trk_mon, half_windo
             'fit': fit, 'fit_post': fit_post, 'post_window': None if fit_post is None else fit_post['window']}
 
 
-def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), post_search=POST_SEARCH, eclipse_corrections=True, **kw):
+def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(1800.0, 120.0), post_search=POST_SEARCH, eclipse_corrections=True, no_update=False, **kw):
     """Load everything for one pass and run analyse_arrays.
 
     t_peri : periapsis time, as a string ('2013-12-04/00:12') or Unix seconds
@@ -138,7 +142,7 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
     t0, t1 = t_peri - max(half_window, search[0]) - pad, t_peri + post_search + pad
     trange = [time_string(t0), time_string(t1)]
 
-    pyspedas.projects.themis.fgm(probe=[probe, monitor], trange=trange, level='l2', time_clip=True, apply_eclipse_corrections=eclipse_corrections)
+    pyspedas.projects.themis.fgm(probe=[probe, monitor], trange=trange, level='l2', time_clip=True, apply_eclipse_corrections=eclipse_corrections, no_update=no_update)
     b, c = get_data(f'th{probe}_fgs_gse'), get_data(f'th{monitor}_fgs_gse')
     for name, d in ((f'th{probe}', b), (f'th{monitor}', c)):
         if d is None:
@@ -146,16 +150,16 @@ def analyse_pass(t_peri, probe='b', monitor='c', half_window=1200.0, search=(180
         if not (d.times[0] <= t_peri <= d.times[-1]):
             raise RuntimeError(f'{name}: FGM data do not contain periapsis (stale or missing data)')
 
-    trk_raw = load_track(probe, trange)
-    trk_mon = load_track(monitor, trange)
+    trk_raw = load_track(probe, trange, trange, no_update=no_update)
+    trk_mon = load_track(monitor, trange, trange, no_update=no_update)
     sel = ((b.times >= max(t_peri - half_window, trk_raw['t'][0])) & (b.times <= min(t_peri + half_window, trk_raw['t'][-1])))
-    trk = load_track(probe, trange, t_out=b.times[sel])
+    trk = load_track(probe, trange, t_out=b.times[sel], no_update=no_update)
 
     r = analyse_arrays(t_peri, b.times, b.y, c.times, c.y, trk, trk_raw, trk_mon, half_window=half_window, search=search, post_search=post_search, **kw)
 
     pos = get_data(f'th{probe}_pos_gse')
     if pos is None:
-        pyspedas.projects.themis.state(probe=probe, trange=trange, time_clip=True)
+        pyspedas.projects.themis.state(probe=probe, trange=trange, time_clip=True, no_update=no_update)
         pos = get_data(f'th{probe}_pos_gse')
     near = np.abs(pos.times - t_peri) <= half_window
     ang = float(np.median(tail_angle(pos.y[near])))
